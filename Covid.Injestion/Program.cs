@@ -1,56 +1,18 @@
-﻿using Autofac;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Covid.BLL.Service;
-using Covid.DAL.Service;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Autofac.Extensions.DependencyInjection;
-using Covid.BLL.Service.Utils;
-using Microsoft.Extensions.Configuration;
-using System.IO;
+using System;
 
-namespace Covid.Injestion
+namespace Covid.Ingestion
 {
     class Program
     {
-       private static IServiceProvider _serviceProvider;
         
-        
-        #region
-        private static void RegisterServices()
-        {
-            var path = Directory.GetCurrentDirectory();
-            IConfiguration configuration = new ConfigurationBuilder().AddJsonFile("path/appsettings.json").Build();
-            var services = new ServiceCollection();
-            services.AddSingleton<ICovidBLService, CovidBLService>();
-            services.AddSingleton<ICovidDataRepository, CovidDataRepository>();
-            
-            services.AddSingleton<Application>();
-            _serviceProvider = services.BuildServiceProvider(true);
-        }
-
-        private static void DisposeServices()
-        {
-            if (_serviceProvider == null)
-            {
-                return;
-            }
-            if (_serviceProvider is IDisposable)
-            {
-                ((IDisposable)_serviceProvider).Dispose();
-            }
-        }
         static void Main(string[] args)
         {
-            RegisterServices();
-
-            IServiceScope scope = _serviceProvider.CreateScope();
-            scope.ServiceProvider.GetRequiredService<Application>().Run();
-
-            DisposeServices();
-
+            //var configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
+            var services = Startup.ConfigureServices();
+            var serviceProvider = services.BuildServiceProvider();
+            serviceProvider.GetService<EntryPoint>().Run(args);
         }
-        #endregion
     }
 }
